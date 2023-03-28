@@ -1,0 +1,16 @@
+{
+  "eslint.format.enable": true,
+  "editor.codeActionsOnSave": {
+    "source.fixAll": false,
+    "source.fixAll.eslint": true
+  },
+  "editor.formatOnSave": true,
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "prettier.enable": true,
+  "eslint.codeActionsOnSave.rules": null,
+  "typescript.tsserver.experimental.enableProjectDiagnostics": true,
+  "[vue]": {
+    "editor.defaultFormatter": "Vue.volar"
+  },
+  "prettier.configPath": ".prettierrc.yml"
+}
