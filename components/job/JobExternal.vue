@@ -23,31 +23,27 @@
       <el-table-column v-for="col in columns" :key="col.label" :label="col.label" :prop="col.prop"
         :sortable="col.sortable" :filters="col.filters" :filter-method="col['filter-method']"
         :formatter="col.formatter" />
-      <el-table-column align="right">
-        <template #header>
-          Actions
-        </template>
-      </el-table-column>
     </el-table>
   </client-only>
-  <el-form ref="externalFormRef" :model="externalForm" :rules="rules" label-width="120px" status-icon>
+  <el-form ref="externalFormRef" :model="externalForm" :rules="rules" label-width="240px" status-icon>
     <el-form-item label="Priority" prop="priority">
       <el-select v-model="externalForm.priority">
         <el-option v-for="p in JobPriority" :key="p" :label="rndHelper.priorityRenderer(p)" :value="p" />
-      </el-select>
+      </el-select> <el-input v-if="externalForm.priority > 3" v-model="externalForm.priorityPassword" type="password"
+        style="width:300px" placeholder="Input password for high priority." show-password :prefix-icon="Lock" />
     </el-form-item>
     <el-form-item label="Cpus per Job" prop="cpus">
-      <InputNumber v-model="externalForm.cpus" :max="4" :min="1" />
+      <el-input-number v-model="externalForm.cpus" :max="4" :min="1" />
     </el-form-item>
     <el-form-item label="Max Concurrent Jobs" prop="maxConcurrentJobs">
-      <InputNumber v-model="externalForm.maxConcurrentJobs" :max="9" :min="1" />
+      <el-input-number v-model="externalForm.maxConcurrentJobs" :max="5" :min="1" />
     </el-form-item>
 
     <el-form-item label="Timeout for Starting(min)" prop="readyTimeout">
-      <InputNumber v-model="externalForm.readyTimeout" :max="60" :min="1" />
+      <el-input-number v-model="externalForm.readyTimeout" :max="60" :min="1" />
     </el-form-item>
 
-    <el-button type="primary" @click="createJobs">
+    <el-button type="primary" :disabled="selectedDir.length === 0" @click="createJobs">
       Register Jobs
     </el-button>
   </el-form>
@@ -60,6 +56,7 @@ import UserSelector from '~~/components/common/UserSelector.vue'
 import PopInfo from '../common/PopInfo.vue'
 import { JobPriority } from '~~/models/api/resources/enums'
 import { IJob } from '~~/models/api/job'
+import { Lock } from '@element-plus/icons-vue'
 
 const emits = defineEmits<{ (e: 'created', v: IJob): void }>()
 type DirResponse = IJob & { error: unknown, inputfiles: string[], config: string }
@@ -76,6 +73,30 @@ const rules = reactive<FormRules>({
       type: 'integer',
       required: true,
       message: 'Select priority.',
+      trigger: 'change'
+    }
+  ],
+  cpus: [
+    {
+      type: 'integer',
+      required: true,
+      message: 'Input number of CPUs per one abaqus job.',
+      trigger: 'blur'
+    }
+  ],
+  maxConcurrentJobs: [
+    {
+      type: 'integer',
+      required: true,
+      message: 'Input number of jobs executed at once.',
+      trigger: 'blur'
+    }
+  ],
+  readyTimeout: [
+    {
+      type: 'integer',
+      required: true,
+      message: 'Input timeout for starting job.',
       trigger: 'blur'
     }
   ],
@@ -93,7 +114,7 @@ const nowCreating = ref<boolean>(false)
 const externalFormRef = ref<FormInstance>()
 const externalForm = reactive({
   priority: JobPriority.Middle,
-  priorityPasscord: '',
+  priorityPassword: '',
   cpus: 2,
   maxConcurrentJobs: 1,
   readyTimeout: 30
@@ -105,8 +126,8 @@ const fetchDirs = async () => {
   nowFetching.value = true
   try {
     const uri = fetchForm.owner
-      ? `/api/back/mountedjobs?owner=${fetchForm.owner}`
-      : '/api/back/mountedjobs'
+      ? `/api/back/externaljobs?owner=${fetchForm.owner}`
+      : '/api/back/externaljobs'
     const response = await $fetch<DirResponse[]>(uri)
     dirs.value = response.map(_ => Object.assign(_, { registered: false }))
   } finally {
@@ -121,15 +142,13 @@ type DirRow = {
   owner: string,
   node: string,
   inputDir: string
-  // description: string,
-  // command: IJob['command'],
 };
 
 const multipleTableRef = ref<InstanceType<typeof ElTable>>()
 const tableData = computed<DirRow[]>(() =>
   dirs.value
     ? dirs.value.filter((_) => !_.registered).map((dir) => ({
-      _disabled: Boolean(dir.error) || dir.inputfiles.length === 0,
+      _disabled: Boolean(dir.error),
       _raw: dir,
       owner: dir.owner,
       node: dir.node,
@@ -166,16 +185,9 @@ const handleSelectionChange = (val: DirRow[]) => {
   selectedDir.value = val
 }
 
-const detailTarget = ref<DirData | undefined>()
-const detailVisible = ref(false)
-function showDetail(index: number, row: DirRow) {
-  detailTarget.value = row._raw
-  detailVisible.value = true
-}
-
 const createJobs = async () => {
   if (externalForm.priority > 3) {
-    const auth = await useFetch('/api/back/auth', { method: 'POST', body: { name: 'priority', pass: externalForm.priorityPasscord } })
+    const auth = await useFetch('/api/back/auth', { method: 'POST', body: { name: 'priority', pass: externalForm.priorityPassword } })
     if (!auth.data) {
       ElMessageBox.alert('Invalid password for High priority.', 'Warning', {
         // if you want to disable its autofocus
@@ -190,22 +202,23 @@ const createJobs = async () => {
   // uploadRef.value!.submit()
   nowCreating.value = true
   try {
-    type IImportedJob = Pick<
+    type IExternalJob = Pick<
       IJob,
-      'name' | 'owner' | 'node' | 'description' | 'command' | 'priority' | 'input'
+      'name' | 'owner' | 'node' | 'description' | 'priority' | 'input'
     >;
     const created: IJob[] = []
     for (const dirRow of selectedDir.value) {
       const rawData = dirRow._raw
-      const newJob: IImportedJob = {
+      const newJob: IExternalJob = {
         name: '',
         owner: rawData.owner,
         node: rawData.node,
         description: rawData.description,
-        command: rawData.command,
         input: rawData.input,
         priority: externalForm.priority,
       }
+      if (!newJob.input.external) throw Error('input.external is invalide.')
+      newJob.input.external.cpus = externalForm.cpus
       if (!newJob.input.sharedDirectory) return
 
       const list = (rawData.inputfiles.length === 1) ?

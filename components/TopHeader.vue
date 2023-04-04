@@ -8,6 +8,12 @@
           </el-icon>
           Jobs
         </el-menu-item>
+        <el-menu-item index="tool">
+          <el-icon>
+            <Odometer />
+          </el-icon>
+          Tools
+        </el-menu-item>
         <el-menu-item index="admin">
           <el-icon>
             <setting />
@@ -23,21 +29,34 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
-import { Grid, Setting } from '@element-plus/icons-vue'
+import { Grid, Setting, Odometer } from '@element-plus/icons-vue'
 import UserSwitcher from '~~/components/UserSwitcher.vue'
-import MenuElements from '~~/models/MenuElements'
 
-const navigationPaths: { [key in MenuElements]: string } = {
+const MenuItems = {
+  job: 'job',
+  tool: 'tool',
+  admin: 'admin',
+} as const
+type MenuItems = (typeof MenuItems)[keyof typeof MenuItems]
+
+const navigationPaths: { [key in MenuItems]: string } = {
   job: '/',
+  tool: '/tool',
   admin: '/admin'
 }
 
-const activeIndex = ref<MenuElements>(MenuElements.job)
+const route = useRoute()
+const activeIndex = computed<MenuItems>(() => {
+  const path = route.path
+  if (path.startsWith('/tool')) { return MenuItems.tool }
+  else if (path.startsWith('/admin')) { return MenuItems.admin }
+  else if (path === '/') { return MenuItems.job }
+  throw new Error()
+})
+
 const handleSelect = (key: string, keyPath: string[]) => {
   console.log(key, keyPath)
-  const selected = key as MenuElements
-  activeIndex.value = selected
+  const selected = key as MenuItems
   return navigateTo({
     path: navigationPaths[selected]
   })

@@ -27,15 +27,7 @@
   </client-only>
   <el-dialog v-if="detailTarget" v-model="detailVisible" :title="'Detail of ' + detailTarget.name" width="60%" draggable>
     <el-tabs v-model="selectedTab" type="border-card" class="job-detail">
-      <el-tab-pane name="status">
-        <template #label>
-          <span class="job-detail-tabs-label">
-            <el-icon>
-              <calendar />
-            </el-icon>
-            <span>Status</span>
-          </span>
-        </template>
+      <el-tab-pane name="status" label="Status">
         <el-descriptions class="margin-top" :column="1" border>
           <el-descriptions-item label="Status">{{ detailTarget.status.code }}</el-descriptions-item>
           <el-descriptions-item label="Message">{{ detailTarget.status.message }}</el-descriptions-item>

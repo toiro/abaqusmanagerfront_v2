@@ -1,13 +1,27 @@
 <template>
   <el-table ref="multipleTableRef" :data="tableRow" style="width: 100%" @selection-change="handleSelectionChange">
+    <el-table-column label="Name">
+      <template #default="scope">
+        <el-input v-model="scope.row.name" :disabled="scope.$index !== editingIndex"></el-input>
+      </template>
+    </el-table-column>
     <el-table-column type="selection" width="55" />
     <el-table-column label="Date" width="120">
       <template #default="scope">{{ scope.row.date }}</template>
     </el-table-column>
     <el-table-column property="name" label="Name" width="120" />
     <el-table-column property="address" label="Address" show-overflow-tooltip />
+    <el-table-column label="Operations">
+      <template #default="scope">
+        <el-button size="small" @click="handleEdit(scope.$index, scope.row)">Edit</el-button>
+      </template>
+    </el-table-column>
+
   </el-table>
   <div style="margin-top: 20px">
+    <el-button type="primary" @click="addRow()">
+      Create new user
+    </el-button>
     <el-button @click="register()">Register</el-button>
     <el-button @click="toggleSelection()">Clear selection</el-button>
   </div>
@@ -54,6 +68,17 @@ function register() {
   multipleTableRef.value!.clearSelection()
 }
 
+function addRow() {
+  tableData.push({
+    date: '2023-05-03',
+    name: 'New',
+    address: 'No. 189, Grove St, Los Angeles',
+    registered: false
+  })
+  editingIndex.value = tableData.length - 1
+  ElMessage(String(tableData.length))
+}
+
 const tableRow = computed(() =>
   tableData.filter((_) => !_.registered).map((_) => ({
     date: _.date,
@@ -62,6 +87,12 @@ const tableRow = computed(() =>
     _raw: _
   } as UserRow))
 )
+
+const editingIndex = ref<any | undefined>()
+function handleEdit(index: any, row: any) {
+  console.log(index)
+  editingIndex.value = index
+}
 
 const tableData = reactive([
   {

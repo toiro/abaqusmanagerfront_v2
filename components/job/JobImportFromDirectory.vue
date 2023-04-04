@@ -56,9 +56,10 @@
     <el-form-item label="Priority" prop="priority">
       <el-select v-model="priorityForm.priority">
         <el-option v-for="p in JobPriority" :key="p" :label="rndHelper.priorityRenderer(p)" :value="p" />
-      </el-select>
+      </el-select> <el-input v-if="priorityForm.priority > 3" v-model="priorityForm.priorityPassword" type="password"
+        style="width:300px" placeholder="Input password for high priority." show-password :prefix-icon="Lock" />
     </el-form-item>
-    <el-button type="primary" @click="createJobs">
+    <el-button type="primary" :disabled="selectedDir.length === 0" @click="createJobs">
       Register Jobs
     </el-button>
   </el-form>
@@ -66,7 +67,7 @@
 
 <script setup lang="ts">
 import type { ElTable, FormInstance, FormRules } from 'element-plus'
-import { InfoFilled } from '@element-plus/icons-vue'
+import { Lock } from '@element-plus/icons-vue'
 import { ColumnDef } from '../utils/Types'
 import UserSelector from '~~/components/common/UserSelector.vue'
 import PopInfo from '../common/PopInfo.vue'
@@ -105,7 +106,7 @@ const nowCreating = ref<boolean>(false)
 const priorityFormRef = ref<FormInstance>()
 const priorityForm = reactive({
   priority: JobPriority.Middle,
-  priorityPasscord: ''
+  priorityPassword: ''
 })
 
 const dirs = ref<DirData[]>([])
@@ -184,7 +185,7 @@ function showDetail(index: number, row: DirRow) {
 
 const createJobs = async () => {
   if (priorityForm.priority > 3) {
-    const auth = await useFetch('/api/back/auth', { method: 'POST', body: { name: 'priority', pass: priorityForm.priorityPasscord } })
+    const auth = await useFetch('/api/back/auth', { method: 'POST', body: { name: 'priority', pass: priorityForm.priorityPassword } })
     if (!auth.data) {
       ElMessageBox.alert('Invalid password for High priority.', 'Warning', {
         // if you want to disable its autofocus

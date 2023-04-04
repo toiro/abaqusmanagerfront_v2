@@ -1,8 +1,6 @@
 <template>
   <NuxtLayout>
     <div>
-      <h1>Main Page</h1>
-      <p>User is {{ userStore.ref.value.name }}.</p>
       <el-tabs type="card" v-model="activeTab">
         <el-tab-pane label="Job List" :name="TabName.View_Table">
           <JobTable ref="table" @job-modified="reload" />
@@ -14,7 +12,7 @@
           <JobImportFromDirectory @onRegister="reload" />
         </el-tab-pane>
         <el-tab-pane label="Use Abaqus Externally" :name="TabName.Register_External">
-          Task
+          <JobExternal @onRegister="reload" />
         </el-tab-pane>
       </el-tabs>
     </div>

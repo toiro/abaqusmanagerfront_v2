@@ -21,7 +21,8 @@
     <el-form-item label="Priority" prop="priority">
       <el-select v-model="jobForm.priority">
         <el-option v-for="p in JobPriority" :key="p" :label="rndHelper.priorityRenderer(p)" :value="p" />
-      </el-select>
+      </el-select> <el-input v-if="jobForm.priority > 3" v-model="jobForm.priorityPassword" type="password"
+        style="width:300px" placeholder="Input password for high priority." show-password :prefix-icon="Lock" />
     </el-form-item>
     <el-form-item label="CPUs" prop="cpus">
       <el-select v-model="jobForm.cpus">
@@ -38,7 +39,7 @@
 </template>
 
 <script setup lang="ts">
-import { UploadFilled } from '@element-plus/icons-vue'
+import { UploadFilled, Lock } from '@element-plus/icons-vue'
 import type { UploadInstance, FormInstance, FormRules, UploadProps } from 'element-plus'
 import mongoose from 'mongoose'
 import UserSelector from '~~/components/common/UserSelector.vue'
@@ -57,7 +58,7 @@ const jobForm = reactive({
   node: '',
   priority: JobPriority.Middle,
   cpus: 2,
-  priorityPasscord: ''
+  priorityPassword: ''
 })
 
 const rules = reactive<FormRules>({
@@ -106,7 +107,7 @@ type IUploadJob = Pick<
 const invokeCreate = async () => {
   if (!(await jobFormRef.value!.validate())) { return }
   if (jobForm.priority > 3) {
-    const auth = await useFetch('/api/back/auth', { method: 'POST', body: { name: 'priority', pass: jobForm.priorityPasscord } })
+    const auth = await useFetch('/api/back/auth', { method: 'POST', body: { name: 'priority', pass: jobForm.priorityPassword } })
     if (!auth.data) {
       ElMessageBox.alert('Invalid password for High priority.', 'Warning', {
         // if you want to disable its autofocus
