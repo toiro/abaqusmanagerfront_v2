@@ -1,4 +1,5 @@
 {
+  "name": "abaqusmanagerfront_v2",
   "private": true,
   "scripts": {
     "build": "nuxt build",
