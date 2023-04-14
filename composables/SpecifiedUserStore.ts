@@ -1,30 +1,30 @@
 const key = 'selectedUser'
 
 type UserState = {
-  name: string;
-};
+  name: string
+}
 
-export const useUserStore = () => new UserStore()
+export const useSpecifiedUser = () => new UserStore()
 
 class UserStore {
   _cookie
   _state
-  constructor () {
+  constructor() {
     this._cookie = useCookie(key, {
-      default: () => ({ name: '' })
+      default: () => ({ name: '' }),
     })
     this._state = useState<UserState>(key, () => this._cookie.value)
   }
 
-  get name () {
+  get name() {
     return this._state.value.name
   }
 
-  get ref () {
+  get ref() {
     return readonly(this._state)
   }
 
-  setUser (name: string) {
+  setUser(name: string) {
     this._cookie.value.name = name
     this._state.value.name = name
   }

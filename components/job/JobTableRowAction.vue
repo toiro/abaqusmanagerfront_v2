@@ -1,20 +1,14 @@
 <template>
   <div>
-    <div>
-      <el-button @click="emits('showDetail', props.index, props.job)">
-        Details
-      </el-button>
-    </div>
-    <div v-if="canBeDeleted(props.job)">
-      <el-button size="small" type="danger" :loading="nowDeleting" @click="handleDelete()">
-        Delete
-      </el-button>
-    </div>
-    <div v-if="canBeTerminated(props.job)">
-      <el-button size="small" type="warning" :loading="nowTerminating" @click="handleTerminate()">
-        Terminate
-      </el-button>
-    </div>
+    <el-button @click="emits('showDetail', props.index, props.job)">
+      Details
+    </el-button>
+    <el-button v-if="canBeDeleted(props.job)" type="danger" :loading="nowDeleting" @click="handleDelete()">
+      Delete
+    </el-button>
+    <el-button v-if="canBeTerminated(props.job)" type="warning" :loading="nowTerminating" @click="handleTerminate()">
+      Terminate
+    </el-button>
   </div>
 </template>
 

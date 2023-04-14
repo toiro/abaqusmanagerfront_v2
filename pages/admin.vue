@@ -3,10 +3,10 @@
     <div>
       <h1>Admin Configuration</h1>
       <div v-if="!isAuthenticated">
-        <el-form ref="authFormRef" :model="authForm" label-width="120px" @submit.native.prevent="authenticate">
+        <el-form ref="authFormRef" :model="authForm" label-width="120px" @submit.prevent="authenticate">
           <el-form-item label="Password" prop="password">
             <el-input v-model="authForm.password" type="password" style="width:300px"
-              placeholder="Input password for high priority." show-password :prefix-icon="Lock" />
+              placeholder="Input password for Admin page." show-password :prefix-icon="Lock" />
           </el-form-item>
           <el-button type="primary" @click="authenticate">
             Continue

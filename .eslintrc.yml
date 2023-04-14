@@ -5,3 +5,4 @@ extends:
 rules:
   'vue/max-attributes-per-line': off
   'vue/first-attribute-linebreak': off
+  'no-redeclare': off

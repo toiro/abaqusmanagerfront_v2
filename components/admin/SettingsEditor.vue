@@ -28,6 +28,7 @@ async function loadSettings() {
       switch (config.key) {
         case 'AvailableTokenCount':
           settings.AvailableTokenCount = parseInt(config.value)
+          break
         default:
           break
       }

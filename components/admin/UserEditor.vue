@@ -51,7 +51,6 @@ const users = ref<IUser[]>([])
 
 const nowLoading = ref(false)
 async function loadUsers() {
-  console.log("loadUsers")
   nowLoading.value = true
   try {
     users.value = await $fetch<IUser[]>('/api/back/users')
@@ -63,8 +62,8 @@ async function refleshCache() {
   await (await rndHelper.loadUserIndex()).refresh;
 }
 async function reloadUsers() {
-  refleshCache()
-  loadUsers()
+  await refleshCache()
+  await loadUsers()
 }
 loadUsers()
 
@@ -85,7 +84,7 @@ function startEdit(index: number, row: IUser) {
   editIndex.value = index
 }
 
-async function invokeSave(index: number, row: IUser) {
+async function invokeSave(_index: number, row: IUser) {
   if (!editIndex.value) return
   nowRowSaving.value = true
   try {
@@ -100,7 +99,7 @@ async function invokeSave(index: number, row: IUser) {
   }
 }
 
-async function invokeDelete(index: number, row: IUser) {
+async function invokeDelete(_index: number, row: IUser) {
   if (!editIndex.value) return
   // delete user on database
   if (!await MsgBox.confirmWarning(`Delete the user "${row.name}"?`, 'Delete')) {
@@ -109,7 +108,7 @@ async function invokeDelete(index: number, row: IUser) {
   // exec delete
   nowRowDeleting.value = true
   try {
-    const response = await $fetch(`/api/back/users/${row.name}`, { method: 'DELETE' })
+    await $fetch(`/api/back/users/${row.name}`, { method: 'DELETE' })
     reloadUsers()
   } catch (e) {
     MsgBox.debugError(e)

@@ -4,10 +4,10 @@
 
 <script setup lang="ts">
 import UserSelector from './common/UserSelector.vue';
-const userStore = useUserStore();
-const initUser = userStore.name ?? '';
+const store = useSpecifiedUser();
+const initUser = store.name ?? '';
 const selected = ref(initUser);
 watchEffect(() => {
-  userStore.setUser(selected.value);
+  store.setUser(selected.value);
 });
 </script>

@@ -1,29 +1,31 @@
 <template>
-  <el-table ref="multipleTableRef" :data="tableRow" style="width: 100%" @selection-change="handleSelectionChange">
-    <el-table-column label="Name">
-      <template #default="scope">
-        <el-input v-model="scope.row.name" :disabled="scope.$index !== editingIndex"></el-input>
-      </template>
-    </el-table-column>
-    <el-table-column type="selection" width="55" />
-    <el-table-column label="Date" width="120">
-      <template #default="scope">{{ scope.row.date }}</template>
-    </el-table-column>
-    <el-table-column property="name" label="Name" width="120" />
-    <el-table-column property="address" label="Address" show-overflow-tooltip />
-    <el-table-column label="Operations">
-      <template #default="scope">
-        <el-button size="small" @click="handleEdit(scope.$index, scope.row)">Edit</el-button>
-      </template>
-    </el-table-column>
+  <div>
+    <el-table ref="multipleTableRef" :data="tableRow" style="width: 100%" @selection-change="handleSelectionChange">
+      <el-table-column label="Name">
+        <template #default="scope">
+          <el-input v-model="scope.row.name" :disabled="scope.$index !== editingIndex"></el-input>
+        </template>
+      </el-table-column>
+      <el-table-column type="selection" width="55" />
+      <el-table-column label="Date" width="120">
+        <template #default="scope">{{ scope.row.date }}</template>
+      </el-table-column>
+      <el-table-column property="name" label="Name" width="120" />
+      <el-table-column property="address" label="Address" show-overflow-tooltip />
+      <el-table-column label="Operations">
+        <template #default="scope">
+          <el-button size="small" @click="handleEdit(scope.$index, scope.row)">Edit</el-button>
+        </template>
+      </el-table-column>
 
-  </el-table>
-  <div style="margin-top: 20px">
-    <el-button type="primary" @click="addRow()">
-      Create new user
-    </el-button>
-    <el-button @click="register()">Register</el-button>
-    <el-button @click="toggleSelection()">Clear selection</el-button>
+    </el-table>
+    <div style="margin-top: 20px">
+      <el-button type="primary" @click="addRow()">
+        Create new user
+      </el-button>
+      <el-button @click="register()">Register</el-button>
+      <el-button @click="toggleSelection()">Clear selection</el-button>
+    </div>
   </div>
 </template>
 
@@ -51,7 +53,7 @@ const toggleSelection = (rows?: User[]) => {
   if (rows) {
     rows.forEach((row) => {
       // TODO: improvement typing when refactor table
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+
       // @ts-expect-error
       multipleTableRef.value!.toggleRowSelection(row, undefined)
     })
@@ -64,7 +66,7 @@ const handleSelectionChange = (val: UserRow[]) => {
 }
 
 function register() {
-  multipleSelection.value.forEach((_) => _._raw.registered = true)
+  multipleSelection.value.forEach((_) => { _._raw.registered = true })
   multipleTableRef.value!.clearSelection()
 }
 
@@ -89,7 +91,7 @@ const tableRow = computed(() =>
 )
 
 const editingIndex = ref<any | undefined>()
-function handleEdit(index: any, row: any) {
+function handleEdit(index: any, _row: any) {
   console.log(index)
   editingIndex.value = index
 }

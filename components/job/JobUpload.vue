@@ -47,13 +47,13 @@ import NodeSelector from '~~/components/common/NodeSelector.vue'
 import { JobPriority } from '~~/models/api/resources/enums'
 import { IJob } from '~~/models/api/job'
 
-const emits = defineEmits<{ (e: 'created', v: IJob): void }>()
+const emits = defineEmits<{ (e: 'onCreate', v: IJob): void }>()
 
 const nowCreating = ref<boolean>(false)
 const uploadRef = ref<UploadInstance>()
-const jobFormRef = ref<FormInstance>()
+const jobFormRef = ref<FormInstance>() // TODO cause Body is unusable error
 const jobForm = reactive({
-  owner: '',
+  owner: useSpecifiedUser().name,
   description: '',
   node: '',
   priority: JobPriority.Middle,
@@ -145,13 +145,16 @@ const createJob: UploadProps['onSuccess'] = async (uploaded: IUploadedInfo) => {
         uploaded: new mongoose.Types.ObjectId(uploaded.id)
       }
     }
-    const { data: created } = await $fetch<{ data: IJob }>('/api/back/jobs', {
+    const created = await $fetch<IJob>('/api/back/jobs', {
       method: 'POST',
       body: newJob,
     })
-    emits("created", created)
+    emits("onCreate", created)
     // JobDriverInstance.emit(JobDriverEvent.create, created)
-  } finally {
+  } catch (e) {
+    console.log(e)
+  }
+  finally {
     nowCreating.value = false
   }
   uploadRef.value!.clearFiles(['success'])

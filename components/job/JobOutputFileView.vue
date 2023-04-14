@@ -3,6 +3,7 @@
     <el-card v-loading="nowLoading">
       <template #header>
         <div class="card-header">
+          The last 100 lines of the file if it exists.
           <el-button size="small" circle @click="loadContent(true)">
             <el-icon>
               <Refresh />
@@ -23,8 +24,8 @@
 
 <script setup lang="ts">
 import { Refresh } from '@element-plus/icons-vue';
-import { IJob } from '~~/models/api/job';
 import { OutputFileExt } from '../utils/Types';
+import { IJob } from '~~/models/api/job';
 
 type Props = {
   job: IJob,
@@ -44,13 +45,13 @@ watch(props, () => {
   }
 })
 
-async function loadContent(force: boolean = false) {
+async function loadContent(force = false) {
   if (content.value && !force) { return }
 
   let newContent = ''
   nowLoading.value = true
   try {
-    newContent = String(await $fetch(`/back/jobs/${props.job._id.toString()}/${props.ext}`))
+    newContent = String(await $fetch(`/api/back/jobs/${props.job._id.toString()}/${props.ext}`))
   } finally {
     // this.$Loading.finish()
     content.value = newContent

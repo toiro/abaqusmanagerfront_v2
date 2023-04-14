@@ -1,18 +1,20 @@
 <template>
   <NuxtLayout>
     <div>
-      <el-tabs type="card" v-model="activeTab">
+      <TokenIndicator ref="tokenIndicator" />
+      <el-divider />
+      <el-tabs v-model="activeTab" type="card">
         <el-tab-pane label="Job List" :name="TabName.View_Table">
           <JobTable ref="table" @job-modified="reload" />
         </el-tab-pane>
         <el-tab-pane label="Uploade Input File(s)" :name="TabName.Register_Upload">
-          <JobUpload @onCreate="reload" />
+          <JobUpload @on-create="reload" />
         </el-tab-pane>
         <el-tab-pane label="Import From Directory" :name="TabName.Register_Shared">
-          <JobImportFromDirectory @onRegister="reload" />
+          <JobImportFromDirectory @on-register="reload" />
         </el-tab-pane>
         <el-tab-pane label="Use Abaqus Externally" :name="TabName.Register_External">
-          <JobExternal @onRegister="reload" />
+          <JobExternal @on-register="reload" />
         </el-tab-pane>
       </el-tabs>
     </div>
@@ -20,6 +22,7 @@
 </template>
 
 <script setup lang="ts">
+import TokenIndicator from '~~/components/job/TokenIndicator.vue';
 import JobTable from '~/components/job/JobTable.vue'
 import JobUpload from '~/components/job/JobUpload.vue'
 import JobImportFromDirectory from '~~/components/job/JobImportFromDirectory.vue'
@@ -32,11 +35,12 @@ const TabName = {
 } as const
 type TabName = (typeof TabName)[keyof typeof TabName]
 
-const userStore = useUserStore()
+const userStore = useSpecifiedUser()
 const route = useRoute()
 
 const activeTab = ref<TabName>(TabName.View_Table)
 const table = ref<InstanceType<typeof JobTable> | null>(null)
+const tokenIndicator = ref<InstanceType<typeof TokenIndicator> | null>(null)
 
 function reload() {
   table.value?.refresh()
@@ -45,7 +49,6 @@ function reload() {
 
 // クエリパラメータ
 const queryUserId = route.query.user
-console.log('query user: ' + queryUserId)
 if (queryUserId) {
   userStore.setUser(queryUserId as string)
 }

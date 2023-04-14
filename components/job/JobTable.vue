@@ -1,18 +1,13 @@
 <template>
   <client-only>
-    <el-table v-loading="pending" :data="tableData" style="width: 100%">
+    <el-table ref="tableRef" v-loading="pending" :data="tableData" style="width: 100%">
       <el-table-column v-for="col in columns" :key="col.label" :label="col.label" :prop="col.prop"
         :sortable="col.sortable" :filters="col.filters" :filter-method="col['filter-method']"
         :formatter="col.formatter" />
       <el-table-column align="right">
         <template #header>
           Actions
-          <!-- <el-input
-            v-model="search"
-            size="small"
-            placeholder="Type to search"
-          /> -->
-          <el-button size="small" circle @click="refresh()">
+          <el-button size="small" circle :loading="pending" @click="refresh()">
             <el-icon>
               <Refresh />
             </el-icon>
@@ -20,7 +15,7 @@
         </template>
         <template #default="scope">
           <JobTableRowAction :index="scope.$index" :job="(scope.row as JobRow).raw"
-            @show-detail="(index, job) => showDetail(job)" />
+            @show-detail="(index, job) => showDetail(job)" @delete="emits('jobModified')" />
         </template>
       </el-table-column>
     </el-table>
@@ -49,7 +44,7 @@
           </el-descriptions-item>
         </el-descriptions>
       </el-tab-pane>
-      <el-tab-pane v-for="ext of Object.values(OutputFileExt)" :key="ext" :label="ext" :name="`file-${ext}`">
+      <el-tab-pane v-for="ext of detailShowFileExts" :key="ext" :label="ext" :name="`file-${ext}`">
         <JobOutputFileView :job="detailTarget" :ext="ext as OutputFileExt"
           :show="detailVisible && selectedTab === `file-${ext}`" />
       </el-tab-pane>
@@ -59,6 +54,7 @@
 
 <script setup lang="ts">
 import { Refresh } from '@element-plus/icons-vue'
+import { TableInstance } from 'element-plus';
 import { ColumnDef, OutputFileExt } from '../utils/Types';
 import { JobStatus, JobPriority } from '~/models/api/resources/enums'
 import { IJob } from '~~/models/api/job'
@@ -67,6 +63,7 @@ const emits = defineEmits<{
   (e: 'jobModified'): void
 }>()
 
+const tableRef = ref<TableInstance>()
 
 type JobRow = {
   name: string;
@@ -78,10 +75,49 @@ type JobRow = {
   raw: IJob;
 };
 
+const {
+  data: jobs,
+  pending,
+  refresh: refreshData
+} = jobFetch.lazyFetch()
+
+async function refresh() {
+  await refreshData()
+  tableRef.value!.clearFilter([]) // apply fiter after reflesh
+}
+
+defineExpose({
+  refresh
+})
+
+const tableData = computed<JobRow[]>(() =>
+  jobs.value
+    ? jobs.value.map(_ => ({
+      name: _.name,
+      status: _.status.code,
+      owner: _.owner,
+      node: _.node,
+      priority: _.priority,
+      createdAt: _.createdAt,
+      raw: _
+    }))
+    : []
+)
+
 const { data: users } = await rndHelper.loadUserIndex()
 const { data: nodes } = await rndHelper.loadNodeIndex()
+const userFilter = computed(() => {
+  // pull up specified user to top
+  const sName = useSpecifiedUser().name
+  if (!users.value) return []
+  return users.value.sort((a, b) =>
+    !sName || a.value === b.value ? 0
+      : a.value === sName ? -1
+        : b.value === sName ? 1
+          : 0)
+})
 
-const columns: ColumnDef<JobRow>[] = [
+const columns = computed<ColumnDef<JobRow>[]>(() => [
   {
     label: 'Name',
     prop: 'name',
@@ -101,7 +137,7 @@ const columns: ColumnDef<JobRow>[] = [
   {
     label: 'Owner',
     prop: 'owner',
-    filters: users.value ?? [],
+    filters: userFilter.value,
     'filter-method': (value, row) => {
       return row.owner === value
     }
@@ -127,27 +163,7 @@ const columns: ColumnDef<JobRow>[] = [
     sortable: true,
     formatter: (row: JobRow) => rndHelper.dateformat(row.createdAt)
   }
-]
-
-const {
-  data: jobs,
-  pending,
-  refresh
-} = jobFetch.lazyFetch()
-
-const tableData = computed<JobRow[]>(() =>
-  jobs.value
-    ? jobs.value.map(_ => ({
-      name: _.name,
-      status: _.status.code,
-      owner: _.owner,
-      node: _.node,
-      priority: _.priority,
-      createdAt: _.createdAt,
-      raw: _
-    }))
-    : []
-)
+])
 
 const selectedTab = ref('status')
 const detailTarget = ref<IJob | undefined>()
@@ -157,6 +173,7 @@ const detailShowFileTabs = computed(() => {
   const job = detailTarget.value
   return !([JobStatus.Waiting, JobStatus.Starting] as JobStatus[]).includes(job.status.code) && !job.input.external
 })
+const detailShowFileExts = computed(() => detailShowFileTabs.value ? Object.values(OutputFileExt) : [])
 
 function showDetail(job: IJob) {
   detailTarget.value = job
@@ -174,7 +191,4 @@ function convertToConfig(job: IJob) {
     2)
 }
 
-defineExpose({
-  refresh
-})
 </script>

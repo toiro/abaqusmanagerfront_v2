@@ -11,6 +11,7 @@
       Fetch
     </el-button>
   </el-form>
+  <el-divider />
   <h3>
     Step 2: Select directories and Register jobs.
     <PopInfo>To register jobs, directory is required.<br>
@@ -25,6 +26,7 @@
         :formatter="col.formatter" />
     </el-table>
   </client-only>
+  <el-divider border-style="dashed" />
   <el-form ref="externalFormRef" :model="externalForm" :rules="rules" label-width="240px" status-icon>
     <el-form-item label="Priority" prop="priority">
       <el-select v-model="externalForm.priority">
@@ -51,14 +53,14 @@
 
 <script setup lang="ts">
 import type { ElTable, FormInstance, FormRules } from 'element-plus'
+import { Lock } from '@element-plus/icons-vue'
 import { ColumnDef } from '../utils/Types'
-import UserSelector from '~~/components/common/UserSelector.vue'
 import PopInfo from '../common/PopInfo.vue'
+import UserSelector from '~~/components/common/UserSelector.vue'
 import { JobPriority } from '~~/models/api/resources/enums'
 import { IJob } from '~~/models/api/job'
-import { Lock } from '@element-plus/icons-vue'
 
-const emits = defineEmits<{ (e: 'created', v: IJob): void }>()
+const emits = defineEmits<{ (e: 'onRegister', v: IJob[]): void }>()
 type DirResponse = IJob & { error: unknown, inputfiles: string[], config: string }
 type DirData = DirResponse & { registered: boolean }
 
@@ -106,7 +108,7 @@ const rules = reactive<FormRules>({
 const nowFetching = ref<boolean>(false)
 const fetchFormRef = ref<FormInstance>()
 const fetchForm = reactive({
-  owner: '',
+  owner: useSpecifiedUser().name,
   node: '',
 })
 
@@ -144,7 +146,7 @@ type DirRow = {
   inputDir: string
 };
 
-const multipleTableRef = ref<InstanceType<typeof ElTable>>()
+const dirTableRef = ref<InstanceType<typeof ElTable>>()
 const tableData = computed<DirRow[]>(() =>
   dirs.value
     ? dirs.value.filter((_) => !_.registered).map((dir) => ({
@@ -190,8 +192,6 @@ const createJobs = async () => {
     const auth = await useFetch('/api/back/auth', { method: 'POST', body: { name: 'priority', pass: externalForm.priorityPassword } })
     if (!auth.data) {
       ElMessageBox.alert('Invalid password for High priority.', 'Warning', {
-        // if you want to disable its autofocus
-        // autofocus: false,
         confirmButtonText: 'OK',
         type: 'warning'
       })
@@ -206,7 +206,7 @@ const createJobs = async () => {
       IJob,
       'name' | 'owner' | 'node' | 'description' | 'priority' | 'input'
     >;
-    const created: IJob[] = []
+    const registered: IJob[] = []
     for (const dirRow of selectedDir.value) {
       const rawData = dirRow._raw
       const newJob: IExternalJob = {
@@ -217,7 +217,7 @@ const createJobs = async () => {
         input: rawData.input,
         priority: externalForm.priority,
       }
-      if (!newJob.input.external) throw Error('input.external is invalide.')
+      if (!newJob.input.external) throw new Error('input.external is invalide.')
       newJob.input.external.cpus = externalForm.cpus
       if (!newJob.input.sharedDirectory) return
 
@@ -231,14 +231,15 @@ const createJobs = async () => {
       for (const record of list) {
         newJob.name = record.name
         newJob.input.sharedDirectory.inputfile = record.inputfile
-        const responseJob = await $fetch<IJob>('back/jobs', { method: 'POST', body: newJob })
-        created.push(responseJob)
+        const responseJob = await $fetch<IJob>('/api/back/jobs', { method: 'POST', body: newJob })
+        registered.push(responseJob)
       }
 
       dirRow._raw.registered = true
     }
+    emits("onRegister", registered)
   } finally {
-    multipleTableRef.value!.clearSelection()
+    dirTableRef.value!.clearSelection()
     nowCreating.value = false
   }
 }

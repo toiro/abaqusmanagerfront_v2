@@ -51,7 +51,7 @@ const activeIndex = computed<MenuItems>(() => {
   if (path.startsWith('/tool')) { return MenuItems.tool }
   else if (path.startsWith('/admin')) { return MenuItems.admin }
   else if (path === '/') { return MenuItems.job }
-  throw new Error()
+  throw new Error('never')
 })
 
 const handleSelect = (key: string, keyPath: string[]) => {

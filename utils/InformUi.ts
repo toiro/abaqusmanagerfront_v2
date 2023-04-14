@@ -11,7 +11,7 @@ export const MsgBox = {
 type MsgBoxType = 'success' | 'info' | 'warning' | 'error'
 async function showMessageBox(message: string, type: MsgBoxType) {
   await ElMessageBox.alert(message, {
-    type: type,
+    type,
     confirmButtonText: 'OK',
   })
 }
@@ -30,11 +30,11 @@ async function showDebugError(error: unknown) {
   }
 }
 
-async function showConfirmMessageBox(query: string, type: MsgBoxType, actionLabel: string = 'OK') {
+async function showConfirmMessageBox(query: string, type: MsgBoxType, actionLabel = 'OK') {
   try {
     await ElMessageBox.confirm(query, {
       confirmButtonText: actionLabel,
-      type: type,
+      type,
     })
   } catch (e) {
     return false

@@ -11,6 +11,7 @@
       Fetch
     </el-button>
   </el-form>
+  <el-divider />
   <h3>
     Step 2: Select directories and Register jobs.
     <PopInfo>To register jobs, place input file(s) and others in each job directory.<br>
@@ -35,6 +36,7 @@
       </el-table-column>
     </el-table>
   </client-only>
+  <el-divider border-style="dashed" />
   <el-dialog v-if="detailTarget" v-model="detailVisible" :title="'Detail of ' + detailTarget.name" width="30%" draggable>
     <p v-if="detailTarget.description">{{ detailTarget.description }}</p>
     <el-descriptions class="margin-top" :column="1" border>
@@ -44,7 +46,7 @@
       <el-descriptions-item v-if="detailTarget.error" label="Error">{{ detailTarget.error }}</el-descriptions-item>
       <el-descriptions-item v-if="detailTarget.inputfiles.length > 0" label="Input File(s)">
         <ul>
-          <li v-for="f in detailTarget.inputfiles">{{ f }}</li>
+          <li v-for="f in detailTarget.inputfiles" :key="f">{{ f }}</li>
         </ul>
       </el-descriptions-item>
       <el-descriptions-item v-if="detailTarget.config" label="Config File">
@@ -59,7 +61,7 @@
       </el-select> <el-input v-if="priorityForm.priority > 3" v-model="priorityForm.priorityPassword" type="password"
         style="width:300px" placeholder="Input password for high priority." show-password :prefix-icon="Lock" />
     </el-form-item>
-    <el-button type="primary" :disabled="selectedDir.length === 0" @click="createJobs">
+    <el-button :loading="nowRegistering" type="primary" :disabled="selectedDir.length === 0" @click="createJobs">
       Register Jobs
     </el-button>
   </el-form>
@@ -69,12 +71,12 @@
 import type { ElTable, FormInstance, FormRules } from 'element-plus'
 import { Lock } from '@element-plus/icons-vue'
 import { ColumnDef } from '../utils/Types'
-import UserSelector from '~~/components/common/UserSelector.vue'
 import PopInfo from '../common/PopInfo.vue'
+import UserSelector from '~~/components/common/UserSelector.vue'
 import { JobPriority } from '~~/models/api/resources/enums'
 import { IJob } from '~~/models/api/job'
 
-const emits = defineEmits<{ (e: 'created', v: IJob): void }>()
+const emits = defineEmits<{ (e: 'onRegistered', v: IJob[]): void }>()
 type DirResponse = IJob & { error: unknown, inputfiles: string[], config: string }
 type DirData = DirResponse & { registered: boolean }
 
@@ -98,11 +100,11 @@ const rules = reactive<FormRules>({
 const nowFetching = ref<boolean>(false)
 const fetchFormRef = ref<FormInstance>()
 const fetchForm = reactive({
-  owner: '',
+  owner: useSpecifiedUser().name,
   node: '',
 })
 
-const nowCreating = ref<boolean>(false)
+const nowRegistering = ref<boolean>(false)
 const priorityFormRef = ref<FormInstance>()
 const priorityForm = reactive({
   priority: JobPriority.Middle,
@@ -135,7 +137,7 @@ type DirRow = {
   // command: IJob['command'],
 };
 
-const multipleTableRef = ref<InstanceType<typeof ElTable>>()
+const dirTableRef = ref<InstanceType<typeof ElTable>>()
 const tableData = computed<DirRow[]>(() =>
   dirs.value
     ? dirs.value.filter((_) => !_.registered).map((dir) => ({
@@ -178,7 +180,7 @@ const handleSelectionChange = (val: DirRow[]) => {
 
 const detailTarget = ref<DirData | undefined>()
 const detailVisible = ref(false)
-function showDetail(index: number, row: DirRow) {
+function showDetail(_index: number, row: DirRow) {
   detailTarget.value = row._raw
   detailVisible.value = true
 }
@@ -188,8 +190,6 @@ const createJobs = async () => {
     const auth = await useFetch('/api/back/auth', { method: 'POST', body: { name: 'priority', pass: priorityForm.priorityPassword } })
     if (!auth.data) {
       ElMessageBox.alert('Invalid password for High priority.', 'Warning', {
-        // if you want to disable its autofocus
-        // autofocus: false,
         confirmButtonText: 'OK',
         type: 'warning'
       })
@@ -198,13 +198,13 @@ const createJobs = async () => {
   }
 
   // uploadRef.value!.submit()
-  nowCreating.value = true
+  nowRegistering.value = true
   try {
     type IImportedJob = Pick<
       IJob,
       'name' | 'owner' | 'node' | 'description' | 'command' | 'priority' | 'input'
     >;
-    const created: IJob[] = []
+    const registered: IJob[] = []
     for (const dirRow of selectedDir.value) {
       const rawData = dirRow._raw
       const newJob: IImportedJob = {
@@ -228,15 +228,16 @@ const createJobs = async () => {
       for (const record of list) {
         newJob.name = record.name
         newJob.input.sharedDirectory.inputfile = record.inputfile
-        const responseJob = await $fetch<IJob>('back/jobs', { method: 'POST', body: newJob })
-        created.push(responseJob)
+        const responseJob = await $fetch<IJob>('/api/back/jobs', { method: 'POST', body: newJob })
+        registered.push(responseJob)
       }
 
       dirRow._raw.registered = true
     }
+    emits("onRegistered", registered)
   } finally {
-    multipleTableRef.value!.clearSelection()
-    nowCreating.value = false
+    dirTableRef.value!.clearSelection()
+    nowRegistering.value = false
   }
 }
 </script>
