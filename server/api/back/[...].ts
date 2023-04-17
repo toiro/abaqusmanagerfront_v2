@@ -1,15 +1,8 @@
-import {
-  defineEventHandler,
-  getHeaders,
-  getMethod,
-  getQuery,
-  readBody
-} from 'h3'
+import { defineEventHandler, getHeaders, getMethod, getQuery, readBody } from 'h3'
 
 const config = useRuntimeConfig()
 const baseURL = config.public.backendUri
 
-// noinspection JSUnusedGlobalSymbols
 export default defineEventHandler(async (event) => {
   const method = getMethod(event)
   const params = getQuery(event)
@@ -23,11 +16,11 @@ export default defineEventHandler(async (event) => {
 
   return await $fetch(url, {
     headers: {
-      'Content-Type': headers['content-type'] as string
+      'Content-Type': headers['content-type'] as string,
     },
     baseURL,
     method,
     params,
-    body
+    body,
   })
 })

@@ -58,11 +58,7 @@ async function loadUsers() {
     nowLoading.value = false
   }
 }
-async function refleshCache() {
-  await (await rndHelper.loadUserIndex()).refresh;
-}
 async function reloadUsers() {
-  await refleshCache()
   await loadUsers()
 }
 loadUsers()
@@ -90,7 +86,6 @@ async function invokeSave(_index: number, row: IUser) {
   try {
     const res = await $fetch<IUser>(`/api/back/users/${row.name}`, { method: 'POST', body: { maxConcurrentJob: editData.maxConcurrentJob } })
     users.value[editIndex.value].maxConcurrentJob = res.maxConcurrentJob
-    refleshCache()
   } catch (e) {
     MsgBox.debugError(e)
   } finally {

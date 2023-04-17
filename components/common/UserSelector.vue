@@ -6,13 +6,15 @@
         <UserFilled />
       </el-icon>
     </template>
-    <el-option v-for="user in users" :key="user.value" :label="user.label" :value="user.value" />
+    <el-option v-for="user in activeUsers.labels" :key="user.value" :label="user.label" :value="user.value" />
   </el-select>
 </template>
 
 <script setup lang="ts">
 import { UserFilled } from '@element-plus/icons-vue';
-const { data: users } = await rndHelper.loadUserIndex();
+import { useActiveUsers } from '~/composables/ActiveUsers';
+const activeUsers = useActiveUsers()
+// const users = await rndHelper.loadUserIndex();
 
 const props = defineProps<{ modelValue: string; placeholder: string }>();
 const emits = defineEmits<{ (e: 'update:modelValue', text: string): void }>();

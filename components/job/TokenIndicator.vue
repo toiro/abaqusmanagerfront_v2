@@ -1,18 +1,17 @@
 <template>
   <div v-loading="nowLoading">
     License Tokens in Use
-    <PopInfo>
+    <PopInfo v-if="stats">
       {{ stats.InUse }} is in Use and {{ stats.Capacity - stats.InUse }} is Available.<br>
       {{ stats.InUseDsls }} tokens is in Use actually according to DSLS.
     </PopInfo>
-    <el-progress :percent="ratio" :color="color" :text-inside="true" :stroke-width="26">
+    <el-progress v-if="stats" :percent="ratio" :color="color" :text-inside="true" :stroke-width="26">
       <span>{{ stats.InUse }} / {{ stats.Capacity }}</span> <el-button :loading="nowLoading" size="small" circle
         @click="refresh()">
         <el-icon>
           <Refresh />
         </el-icon>
       </el-button>
-
     </el-progress>
   </div>
 </template>
@@ -27,30 +26,23 @@ interface Stats {
   Capacity: number
 }
 
-const { data, pending: nowLoading, refresh } = useLazyFetch<Stats>('/api/back/stats/license', {
-  default: () => ({
-    InUseDsls: 0,
-    InUse: 0,
-    Capacity: 0
-  })
-})
+// To not block first page loading, set "server: false".
+const { data: stats, pending: nowLoading, refresh: _refresh } = useLazyFetch<Stats>('/api/back/stats/license', { server: false })
 
-const stats = computed(() => {
-  if (!data.value) {
-    throw new Error('never owing to default value.')
-  } else {
-    return data.value
-  }
-})
+function refresh() {
+  stats.value = null
+  _refresh()
+}
 
 defineExpose({
   refresh
 })
 
 const ratio = computed(() => {
-  if (stats.value.Capacity === 0) { return 100 }
+  if (!stats.value || stats.value.Capacity === 0) return 100
   return stats.value.InUse / stats.value.Capacity * 100
 })
+
 const color = computed(() => {
   return (ratio.value < 80) ? '#1188ee' : '#ee5533'
 })

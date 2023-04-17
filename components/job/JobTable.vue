@@ -58,6 +58,7 @@ import { TableInstance } from 'element-plus';
 import { ColumnDef, OutputFileExt } from '../utils/Types';
 import { JobStatus, JobPriority } from '~/models/api/resources/enums'
 import { IJob } from '~~/models/api/job'
+import { useActiveUsers } from '~/composables/ActiveUsers';
 
 const emits = defineEmits<{
   (e: 'jobModified'): void
@@ -104,13 +105,14 @@ const tableData = computed<JobRow[]>(() =>
     : []
 )
 
-const { data: users } = await rndHelper.loadUserIndex()
-const { data: nodes } = await rndHelper.loadNodeIndex()
+const activeUsers = useActiveUsers()
+const activeNodes = useActiveNodes()
 const userFilter = computed(() => {
   // pull up specified user to top
   const sName = useSpecifiedUser().name
-  if (!users.value) return []
-  return users.value.sort((a, b) =>
+  const labels = activeUsers.labels
+  if (!labels) return []
+  return labels.sort((a, b) =>
     !sName || a.value === b.value ? 0
       : a.value === sName ? -1
         : b.value === sName ? 1
@@ -145,7 +147,7 @@ const columns = computed<ColumnDef<JobRow>[]>(() => [
   {
     label: 'Node',
     prop: 'node',
-    filters: nodes.value ?? [],
+    filters: activeNodes.labels,
     'filter-method'(value, row) {
       return row.node === value
     }

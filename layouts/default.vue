@@ -1,5 +1,5 @@
 <template>
-  <el-container :style="{minHeight: '100vh'}">
+  <el-container :style="{ minHeight: '100vh' }">
     <el-header>
       <TopHeader />
     </el-header>

@@ -6,13 +6,13 @@
         <Cpu />
       </el-icon>
     </template>
-    <el-option v-for="node in nodes" :key="node.value" :label="node.label" :value="node.value" />
+    <el-option v-for="node in activeNodes.labels" :key="node.value" :label="node.label" :value="node.value" />
   </el-select>
 </template>
 
 <script setup lang="ts">
 import { Cpu } from '@element-plus/icons-vue';
-const { data: nodes } = await rndHelper.loadNodeIndex();
+const activeNodes = useActiveNodes()
 
 const props = defineProps<{ modelValue: string; placeholder: string }>();
 const emits = defineEmits<{ (e: 'update:modelValue', text: string): void }>();
