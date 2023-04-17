@@ -5,12 +5,12 @@ type NodeIndex = { label: string; value: string; text: string }
 
 export const useActiveNodes = () => new ActiveNodesStore()
 
-function load() {
-  return useLazyFetch<INode[]>('/api/back/nodes').data.value || []
-}
-
 class ActiveNodesStore {
-  _state = useState<INode[]>(key, () => load())
+  _state = useState<INode[]>(key, () => [])
+
+  async load() {
+    this._state.value = (await useFetch<INode[]>('/api/back/nodes').data.value) || []
+  }
 
   get labels() {
     return (
@@ -20,9 +20,5 @@ class ActiveNodesStore {
         text: _.hostname,
       })) || []
     )
-  }
-
-  refresh() {
-    load()
   }
 }

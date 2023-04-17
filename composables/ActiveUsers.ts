@@ -5,12 +5,12 @@ export type UserIndex = { label: string; value: string; text: string }
 
 export const useActiveUsers = () => new ActiveUsersStore()
 
-function load() {
-  return useLazyFetch<IUser[]>('/api/back/users').data.value || []
-}
-
 class ActiveUsersStore {
-  _state = useState<IUser[]>(key, () => load())
+  _state = useState<IUser[]>(key, () => [])
+
+  async load() {
+    this._state.value = (await useFetch<IUser[]>('/api/back/users').data.value) || []
+  }
 
   get labels() {
     return (
@@ -20,9 +20,5 @@ class ActiveUsersStore {
         text: _.name,
       })) || []
     )
-  }
-
-  refresh() {
-    load()
   }
 }

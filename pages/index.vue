@@ -35,21 +35,16 @@ const TabName = {
 } as const
 type TabName = (typeof TabName)[keyof typeof TabName]
 
-const userStore = useSpecifiedUser()
-const route = useRoute()
+await Promise.all(
+  [useActiveUsers().load(), useActiveNodes().load()]
+)
 
 const activeTab = ref<TabName>(TabName.View_Table)
 const table = ref<InstanceType<typeof JobTable> | null>(null)
 const tokenIndicator = ref<InstanceType<typeof TokenIndicator> | null>(null)
 
-function reload() {
-  table.value?.refresh()
+async function reload() {
   activeTab.value = TabName.View_Table
-}
-
-// クエリパラメータ
-const queryUserId = route.query.user
-if (queryUserId) {
-  userStore.setUser(queryUserId as string)
+  await table.value?.refresh()
 }
 </script>
