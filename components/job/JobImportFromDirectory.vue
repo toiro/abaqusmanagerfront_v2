@@ -76,7 +76,7 @@ import UserSelector from '~~/components/common/UserSelector.vue'
 import { JobPriority } from '~~/models/api/resources/enums'
 import { IJob } from '~~/models/api/job'
 
-const emits = defineEmits<{ (e: 'onRegistered', v: IJob[]): void }>()
+const emits = defineEmits<{ (e: 'onRegister', v: IJob[]): void }>()
 type DirResponse = IJob & { error: unknown, inputfiles: string[], config: string }
 type DirData = DirResponse & { registered: boolean }
 
@@ -234,7 +234,7 @@ const createJobs = async () => {
 
       dirRow._raw.registered = true
     }
-    emits("onRegistered", registered)
+    emits("onRegister", registered)
   } finally {
     dirTableRef.value!.clearSelection()
     nowRegistering.value = false
