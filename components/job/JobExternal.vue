@@ -154,7 +154,7 @@ const tableData = computed<DirRow[]>(() =>
       _raw: dir,
       owner: dir.owner,
       node: dir.node,
-      inputDir: dir.input && dir.input.sharedDirectory && dir.input.sharedDirectory.path
+      inputDir: dir.input && dir.input.external && dir.input.external.workingDir
     })) as DirRow[]
     : []
 )
@@ -210,7 +210,7 @@ const createJobs = async () => {
     for (const dirRow of selectedDir.value) {
       const rawData = dirRow._raw
       const newJob: IExternalJob = {
-        name: '',
+        name: rawData.name,
         owner: rawData.owner,
         node: rawData.node,
         description: rawData.description,
@@ -219,22 +219,11 @@ const createJobs = async () => {
       }
       if (!newJob.input.external) throw new Error('input.external is invalide.')
       newJob.input.external.cpus = externalForm.cpus
-      if (!newJob.input.sharedDirectory) return
+      newJob.input.external.maxConcurrentJobs = externalForm.maxConcurrentJobs
+      newJob.input.external.readyTimeout = externalForm.readyTimeout
 
-      const list = (rawData.inputfiles.length === 1) ?
-        [{ name: rawData.name, inputfile: rawData.inputfiles[0] }]
-        :
-        rawData.inputfiles.map((inputfile, id) => ({
-          name: `${rawData.name}-${id + 1}`, inputfile
-        }))
-
-      for (const record of list) {
-        newJob.name = record.name
-        newJob.input.sharedDirectory.inputfile = record.inputfile
-        const responseJob = await $fetch<IJob>('/api/back/jobs', { method: 'POST', body: newJob })
-        registered.push(responseJob)
-      }
-
+      const responseJob = await $fetch<IJob>('/api/back/jobs', { method: 'POST', body: newJob })
+      registered.push(responseJob)
       dirRow._raw.registered = true
     }
     emits("onRegister", registered)
