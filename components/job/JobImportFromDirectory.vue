@@ -42,7 +42,7 @@
     <el-descriptions class="margin-top" :column="1" border>
       <el-descriptions-item label="Node">{{ detailTarget.node }}</el-descriptions-item>
       <el-descriptions-item v-if="detailTarget.input" label="Mounted Directory">{{
-        detailTarget.input.sharedDirectory?.path }}</el-descriptions-item>
+        detailTarget.input.path }}</el-descriptions-item>
       <el-descriptions-item v-if="detailTarget.error" label="Error">{{ detailTarget.error }}</el-descriptions-item>
       <el-descriptions-item v-if="detailTarget.inputfiles.length > 0" label="Input File(s)">
         <ul>
@@ -73,12 +73,13 @@ import { Lock } from '@element-plus/icons-vue'
 import { ColumnDef } from '../utils/Types'
 import PopInfo from '../common/PopInfo.vue'
 import UserSelector from '~~/components/common/UserSelector.vue'
-import { JobPriority } from '~~/models/api/resources/enums'
-import { IJob } from '~~/models/api/job'
+import { JobPriority } from '~/sharedDefinitions/model/resources/enums'
+import { IJobSharedDirectory } from '~/sharedDefinitions/model/job'
+import DirectoryInfoBody from '~/sharedDefinitions/api/DirectoryInfoBody'
+import { IJobInputSharedDirectory } from '~/sharedDefinitions/model/jobInput'
 
-const emits = defineEmits<{ (e: 'onRegister', v: IJob[]): void }>()
-type DirResponse = IJob & { error: unknown, inputfiles: string[], config: string }
-type DirData = DirResponse & { registered: boolean }
+const emits = defineEmits<{ (e: 'onRegister', v: IJobSharedDirectory[]): void }>()
+type DirData = DirectoryInfoBody<IJobInputSharedDirectory> & { registered: boolean }
 
 const rules = reactive<FormRules>({
   owner: [
@@ -119,7 +120,7 @@ const fetchDirs = async () => {
     const uri = fetchForm.owner
       ? `/api/back/mountedjobs?owner=${fetchForm.owner}`
       : '/api/back/mountedjobs'
-    const response = await $fetch<DirResponse[]>(uri)
+    const response = await $fetch<DirectoryInfoBody<IJobInputSharedDirectory>[]>(uri)
     dirs.value = response.map(_ => Object.assign(_, { registered: false }))
   } finally {
     nowFetching.value = false
@@ -145,7 +146,7 @@ const tableData = computed<DirRow[]>(() =>
       _raw: dir,
       owner: dir.owner,
       node: dir.node,
-      inputDir: dir.input && dir.input.sharedDirectory && dir.input.sharedDirectory.path
+      inputDir: dir.input.path && ''
     })) as DirRow[]
     : []
 )
@@ -201,10 +202,10 @@ const createJobs = async () => {
   nowRegistering.value = true
   try {
     type IImportedJob = Pick<
-      IJob,
+      IJobSharedDirectory,
       'name' | 'owner' | 'node' | 'description' | 'command' | 'priority' | 'input'
     >;
-    const registered: IJob[] = []
+    const registered: IJobSharedDirectory[] = []
     for (const dirRow of selectedDir.value) {
       const rawData = dirRow._raw
       const newJob: IImportedJob = {
@@ -213,10 +214,10 @@ const createJobs = async () => {
         node: rawData.node,
         description: rawData.description,
         command: rawData.command,
-        input: rawData.input,
+        input: rawData.input as IJobInputSharedDirectory,
         priority: priorityForm.priority,
       }
-      if (!newJob.input.sharedDirectory) return
+      if (newJob.input.type !== 'sharedDirectory') return
 
       const list = (rawData.inputfiles.length === 1) ?
         [{ name: rawData.name, inputfile: rawData.inputfiles[0] }]
@@ -227,8 +228,8 @@ const createJobs = async () => {
 
       for (const record of list) {
         newJob.name = record.name
-        newJob.input.sharedDirectory.inputfile = record.inputfile
-        const responseJob = await $fetch<IJob>('/api/back/jobs', { method: 'POST', body: newJob })
+        newJob.input.inputfile = record.inputfile
+        const responseJob = await $fetch<IJobSharedDirectory>('/api/back/jobs', { method: 'POST', body: newJob })
         registered.push(responseJob)
       }
 

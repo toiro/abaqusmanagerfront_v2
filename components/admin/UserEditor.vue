@@ -44,7 +44,6 @@
 </template>
 
 <script setup lang="ts">
-import { IUser } from '~~/models/api/user'
 
 // *** Load ***
 const users = ref<IUser[]>([])

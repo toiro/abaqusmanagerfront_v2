@@ -44,8 +44,8 @@ import type { UploadInstance, FormInstance, FormRules, UploadProps } from 'eleme
 import mongoose from 'mongoose'
 import UserSelector from '~~/components/common/UserSelector.vue'
 import NodeSelector from '~~/components/common/NodeSelector.vue'
-import { JobPriority } from '~~/models/api/resources/enums'
-import { IJob } from '~~/models/api/job'
+import { IJob } from '~/sharedDefinitions/model/job'
+import { JobPriority } from '~/sharedDefinitions/model/resources/enums'
 
 const emits = defineEmits<{ (e: 'onCreate', v: IJob): void }>()
 
@@ -142,6 +142,7 @@ const createJob: UploadProps['onSuccess'] = async (uploaded: IUploadedInfo) => {
       },
       priority: jobForm.priority,
       input: {
+        type: 'upload',
         uploaded: new mongoose.Types.ObjectId(uploaded.id)
       }
     }

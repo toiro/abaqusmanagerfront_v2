@@ -55,7 +55,7 @@
 </template>
 
 <script setup lang="ts">
-import { INode } from '~~/models/api/node';
+import { INode } from '~/sharedDefinitions/model/node';
 
 
 // *** Load ***

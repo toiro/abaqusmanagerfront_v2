@@ -25,7 +25,7 @@
 <script setup lang="ts">
 import { Refresh } from '@element-plus/icons-vue';
 import { OutputFileExt } from '../utils/Types';
-import { IJob } from '~~/models/api/job';
+import { IJob } from '~/sharedDefinitions/model/job';
 
 type Props = {
   job: IJob,

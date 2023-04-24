@@ -54,8 +54,8 @@ const activeIndex = computed<MenuItems>(() => {
   throw new Error('never')
 })
 
-const handleSelect = (key: string, keyPath: string[]) => {
-  console.log(key, keyPath)
+const handleSelect = (key: string, _keyPath: string[]) => {
+  // console.log(key, keyPath)
   const selected = key as MenuItems
   return navigateTo({
     path: navigationPaths[selected]

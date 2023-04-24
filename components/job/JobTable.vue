@@ -37,7 +37,7 @@
           <el-descriptions-item label="ID">{{ detailTarget._id }}</el-descriptions-item>
         </el-descriptions>
       </el-tab-pane>
-      <el-tab-pane v-if="!detailTarget.input.external" label="Script" name="script">
+      <el-tab-pane v-if="detailTarget.input.type !== 'external'" label="Script" name="script">
         <el-descriptions class="margin-top" :column="1" border>
           <el-descriptions-item label="Json">
             <pre><code>{{ convertToConfig(detailTarget) }}</code></pre>
@@ -56,8 +56,8 @@
 import { Refresh } from '@element-plus/icons-vue'
 import { TableInstance } from 'element-plus';
 import { ColumnDef, OutputFileExt } from '../utils/Types';
-import { JobStatus, JobPriority } from '~/models/api/resources/enums'
-import { IJob } from '~~/models/api/job'
+import { JobStatus, JobPriority } from '~/sharedDefinitions/model/resources/enums'
+import { IJob } from '~/sharedDefinitions/model/job'
 import { useActiveUsers } from '~/composables/ActiveUsers';
 
 const emits = defineEmits<{
@@ -173,7 +173,7 @@ const detailVisible = ref(false)
 const detailShowFileTabs = computed(() => {
   if (!detailTarget.value) return false
   const job = detailTarget.value
-  return !([JobStatus.Waiting, JobStatus.Starting] as JobStatus[]).includes(job.status.code) && !job.input.external
+  return !([JobStatus.Waiting, JobStatus.Starting] as JobStatus[]).includes(job.status.code) && job.input.type !== 'external'
 })
 const detailShowFileExts = computed(() => detailShowFileTabs.value ? Object.values(OutputFileExt) : [])
 

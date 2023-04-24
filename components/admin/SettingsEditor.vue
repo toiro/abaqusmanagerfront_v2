@@ -10,7 +10,8 @@
 </template>
 
 <script setup lang="ts">
-import type { IConfig } from "~~/models/api/config"
+import { IConfig } from '~/sharedDefinitions/model/config';
+
 
 interface Settings {
   AvailableTokenCount: number
