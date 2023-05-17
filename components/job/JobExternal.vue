@@ -229,8 +229,6 @@ const createJobs = async () => {
       const responseJob = await $fetch<IJobExternal>('/api/back/jobs', { method: 'POST', body: newJob })
       registered.push(responseJob)
 
-      const responseJob = await $fetch<IJob>('/api/back/jobs', { method: 'POST', body: newJob })
-      registered.push(responseJob)
       dirRow._raw.registered = true
     }
     emits("onRegister", registered)
