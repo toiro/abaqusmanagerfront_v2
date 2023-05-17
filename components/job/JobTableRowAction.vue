@@ -13,8 +13,9 @@
 </template>
 
 <script setup lang="ts">
-import { IJob } from '~~/models/api/job';
-import { JobStatus } from '~~/models/api/resources/enums';
+import { IJob } from '~/sharedDefinitions/model/job'
+import { JobStatus } from '~/sharedDefinitions/model/resources/enums'
+
 interface Props {
   index: number,
   job: IJob

@@ -1,5 +1,5 @@
 import dateformat from 'dateformat'
-import { JobPriority } from '~~/models/api/resources/enums'
+import { JobPriority } from '~/sharedDefinitions/model/resources/enums'
 
 const defaultDateFormat = 'yyyy-mm-dd HH:MM:ss'
 

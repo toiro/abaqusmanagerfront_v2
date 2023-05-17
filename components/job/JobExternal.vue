@@ -57,12 +57,13 @@ import { Lock } from '@element-plus/icons-vue'
 import { ColumnDef } from '../utils/Types'
 import PopInfo from '../common/PopInfo.vue'
 import UserSelector from '~~/components/common/UserSelector.vue'
-import { JobPriority } from '~~/models/api/resources/enums'
-import { IJob } from '~~/models/api/job'
+import { IJobExternal } from '~/sharedDefinitions/model/job'
+import { JobPriority } from '~/sharedDefinitions/model/resources/enums'
+import DirectoryInfoBody from '~/sharedDefinitions/api/DirectoryInfoBody'
+import { IJobInputExternal } from '~/sharedDefinitions/model/jobInput'
 
-const emits = defineEmits<{ (e: 'onRegister', v: IJob[]): void }>()
-type DirResponse = IJob & { error: unknown, inputfiles: string[], config: string }
-type DirData = DirResponse & { registered: boolean }
+const emits = defineEmits<{ (e: 'onRegister', v: IJobExternal[]): void }>()
+type DirData = DirectoryInfoBody<IJobInputExternal> & { registered: boolean }
 
 const rules = reactive<FormRules>({
   owner: [
@@ -130,7 +131,7 @@ const fetchDirs = async () => {
     const uri = fetchForm.owner
       ? `/api/back/externaljobs?owner=${fetchForm.owner}`
       : '/api/back/externaljobs'
-    const response = await $fetch<DirResponse[]>(uri)
+    const response = await $fetch<DirectoryInfoBody<IJobInputExternal>[]>(uri)
     dirs.value = response.map(_ => Object.assign(_, { registered: false }))
   } finally {
     nowFetching.value = false
@@ -154,7 +155,7 @@ const tableData = computed<DirRow[]>(() =>
       _raw: dir,
       owner: dir.owner,
       node: dir.node,
-      inputDir: dir.input && dir.input.external && dir.input.external.workingDir
+      inputDir: dir.input.workingDir
     })) as DirRow[]
     : []
 )
@@ -203,24 +204,30 @@ const createJobs = async () => {
   nowCreating.value = true
   try {
     type IExternalJob = Pick<
-      IJob,
+      IJobExternal,
       'name' | 'owner' | 'node' | 'description' | 'priority' | 'input'
     >;
-    const registered: IJob[] = []
+    const registered: IJobExternal[] = []
     for (const dirRow of selectedDir.value) {
       const rawData = dirRow._raw
+      if (!rawData.input.workingDir) return
       const newJob: IExternalJob = {
         name: rawData.name,
         owner: rawData.owner,
         node: rawData.node,
         description: rawData.description,
-        input: rawData.input,
+        input: {
+          type: 'external',
+          cpus: externalForm.cpus,
+          workingDir: rawData.input.workingDir,
+          maxConcurrentJobs: externalForm.maxConcurrentJobs,
+          readyTimeout: externalForm.readyTimeout
+        },
         priority: externalForm.priority,
       }
-      if (!newJob.input.external) throw new Error('input.external is invalide.')
-      newJob.input.external.cpus = externalForm.cpus
-      newJob.input.external.maxConcurrentJobs = externalForm.maxConcurrentJobs
-      newJob.input.external.readyTimeout = externalForm.readyTimeout
+
+      const responseJob = await $fetch<IJobExternal>('/api/back/jobs', { method: 'POST', body: newJob })
+      registered.push(responseJob)
 
       const responseJob = await $fetch<IJob>('/api/back/jobs', { method: 'POST', body: newJob })
       registered.push(responseJob)

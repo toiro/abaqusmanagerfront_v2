@@ -1,4 +1,4 @@
-import { IUser } from '~/models/api/user'
+import { IUser } from '~/sharedDefinitions/model/user'
 
 const key = 'activeUsers'
 export type UserIndex = { label: string; value: string; text: string }

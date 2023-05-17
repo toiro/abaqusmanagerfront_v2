@@ -44,7 +44,7 @@
 </template>
 
 <script setup lang="ts">
-import { IUser } from '~~/models/api/user'
+import { IUser } from '~/sharedDefinitions/model/user';
 
 // *** Load ***
 const users = ref<IUser[]>([])
@@ -114,6 +114,7 @@ async function invokeDelete(_index: number, row: IUser) {
 }
 
 function finishEdit() {
+  useActiveUsers().load()
   editIndex.value = undefined
 }
 
