@@ -212,7 +212,7 @@ const createJobs = async () => {
       const rawData = dirRow._raw
       if (!rawData.input.workingDir) return
       const newJob: IExternalJob = {
-        name: '',
+        name: rawData.name,
         owner: rawData.owner,
         node: rawData.node,
         description: rawData.description,
@@ -229,6 +229,8 @@ const createJobs = async () => {
       const responseJob = await $fetch<IJobExternal>('/api/back/jobs', { method: 'POST', body: newJob })
       registered.push(responseJob)
 
+      const responseJob = await $fetch<IJob>('/api/back/jobs', { method: 'POST', body: newJob })
+      registered.push(responseJob)
       dirRow._raw.registered = true
     }
     emits("onRegister", registered)
