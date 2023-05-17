@@ -8,12 +8,12 @@
           </el-icon>
           Jobs
         </el-menu-item>
-        <el-menu-item index="tool">
+        <!-- <el-menu-item index="tool">
           <el-icon>
             <Odometer />
           </el-icon>
           Tools
-        </el-menu-item>
+        </el-menu-item> -->
         <el-menu-item index="admin">
           <el-icon>
             <setting />
@@ -29,7 +29,7 @@
 </template>
 
 <script setup lang="ts">
-import { Grid, Setting, Odometer } from '@element-plus/icons-vue'
+import { Grid, Setting } from '@element-plus/icons-vue'
 import UserSwitcher from '~~/components/UserSwitcher.vue'
 
 const MenuItems = {
