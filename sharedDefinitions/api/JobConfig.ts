@@ -1,4 +1,4 @@
-import { JobCommand } from "../model/jobCommand"
+import { JobCommand } from 'sharedDefinitions/model/jobCommand'
 
 type JobConfig = {
   name?: string

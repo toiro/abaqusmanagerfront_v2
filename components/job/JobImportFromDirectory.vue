@@ -209,7 +209,7 @@ const createJobs = async () => {
     for (const dirRow of selectedDir.value) {
       const rawData = dirRow._raw
       const newJob: IImportedJob = {
-        name: '',
+        name: rawData.name,
         owner: rawData.owner,
         node: rawData.node,
         description: rawData.description,
@@ -223,7 +223,7 @@ const createJobs = async () => {
         [{ name: rawData.name, inputfile: rawData.inputfiles[0] }]
         :
         rawData.inputfiles.map((inputfile, id) => ({
-          name: `${rawData.name}-${id + 1}`, inputfile
+          name: `${rawData.name}-${id + 1}-${inputfile.replace(/.inp$/, '')}`, inputfile
         }))
 
       for (const record of list) {

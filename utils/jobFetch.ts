@@ -1,4 +1,4 @@
-import { IJob } from '~~/models/api/job'
+import { IJob } from '~/sharedDefinitions/model/job'
 
 const apiPath = '/api/back/jobs'
 

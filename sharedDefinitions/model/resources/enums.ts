@@ -1,12 +1,3 @@
-export const ConfigKey = {
-  // パスワード
-  AdminPass: 'AdminPass',
-  PriorityPass: 'PriorityPass',
-  // システムから利用を許可するライセンストークン数
-  AvailableTokenCount: 'AvailableTokenCount',
-} as const
-export type ConfigKey = (typeof ConfigKey)[keyof typeof ConfigKey]
-
 export const JobStatus = {
   Waiting: 'Waiting',
   Ready: 'Ready',
@@ -14,6 +5,7 @@ export const JobStatus = {
   Running: 'Running',
   Completed: 'Completed',
   Failed: 'Failed',
+  Disposed: 'Disposed',
   Missing: 'Missing',
 } as const
 export type JobStatus = (typeof JobStatus)[keyof typeof JobStatus]

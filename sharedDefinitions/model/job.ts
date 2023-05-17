@@ -1,7 +1,6 @@
 import mongoose from 'mongoose'
+import { IJobInputUpload, IJobInputSharedDirectory, IJobInputExternal } from './jobInput.js'
 import type { JobPriority, JobStatus } from './resources/enums.js'
-import { IJobInputUpload, IJobInputSharedDirectory, IJobInputExternal } from './jobInput'
-import { JobCommand } from './jobCommand'
 
 export const name = 'Job'
 
@@ -12,7 +11,13 @@ export interface IGJob<Input extends IJobInputUpload | IJobInputSharedDirectory 
   createdAt: Date
   description: string
   node: string
-  command: JobCommand
+  command: {
+    cpus: number
+    options?: {
+      name: string
+      vaule?: string
+    }[]
+  }
   input: Input
   priority: JobPriority
   status: {

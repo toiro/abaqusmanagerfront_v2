@@ -3,11 +3,18 @@
     <el-table :data="nodes" :loading="nowLoading">
       <!-- hostname：変更不可-->
       <el-table-column label="Hostname" prop="hostname" />
-      <!-- 最大同時実行数：変更可能 -->
-      <el-table-column label="Max Concurrent Jobs">
+      <!-- 利用可のCPU数：変更可能 -->
+      <el-table-column label="Available CPUs">
         <template #default="scope">
-          <el-input-number v-if="editIndex === scope.$index" v-model="editData.maxConcurrentJob" :max="99" :min="1" />
-          <span v-else>{{ scope.row.maxConcurrentJob }}</span>
+          <el-input-number v-if="editIndex === scope.$index" v-model="editData.availableCPUs" :max="99" :min="1" />
+          <span v-else>{{ scope.row.availableCPUs }}</span>
+        </template>
+      </el-table-column>
+      <!-- ライセンストークン割り当て：変更可能 -->
+      <el-table-column label="License Token Quota">
+        <template #default="scope">
+          <el-input-number v-if="editIndex === scope.$index" v-model="editData.licenseTokenQuota" :max="99" :min="1" />
+          <span v-else>{{ scope.row.licenseTokenQuota }}</span>
         </template>
       </el-table-column>
       <!-- 実行ディレクトリ：変更可能 -->
@@ -29,6 +36,13 @@
         <template #default="scope">
           <el-input v-if="editIndex === scope.$index" v-model="editData.importDirectoryRoot" type="text" />
           <span v-else>{{ scope.row.importDirectoryRoot }}</span>
+        </template>
+      </el-table-column>
+      <!-- 有効／無効：変更可能 -->
+      <el-table-column label="Active">
+        <template #default="scope">
+          <el-switch v-if="editIndex === scope.$index" v-model="editData.isActive" />
+          <span v-else><el-switch v-model="scope.row.isActive" disabled /></span>
         </template>
       </el-table-column>
 
@@ -65,7 +79,7 @@ const nowLoading = ref(false)
 async function loadNodes() {
   nowLoading.value = true
   try {
-    nodes.value = await $fetch<INode[]>('/api/back/nodes')
+    nodes.value = await $fetch<INode[]>('/api/back/nodes?includeNonactive=1')
   } finally {
     nowLoading.value = false
   }
@@ -74,20 +88,24 @@ loadNodes()
 
 // *** Edit ***
 const editIndex = ref<number | undefined>()
-type ModifiablePropOfNode = Pick<INode, 'maxConcurrentJob' | 'executeDirectoryRoot' | 'resultDirectoryRoot' | 'importDirectoryRoot'>
+type ModifiablePropOfNode = Pick<INode, 'availableCPUs' | 'licenseTokenQuota' | 'executeDirectoryRoot' | 'resultDirectoryRoot' | 'importDirectoryRoot' | 'isActive'>
 const editData: ModifiablePropOfNode = reactive({
-  maxConcurrentJob: 0,
+  availableCPUs: 0,
+  licenseTokenQuota: 0,
   executeDirectoryRoot: '',
   resultDirectoryRoot: '',
-  importDirectoryRoot: ''
+  importDirectoryRoot: '',
+  isActive: false
 })
 
 function startEdit(index: number, row: INode) {
   editIndex.value = index
-  editData.maxConcurrentJob = row.maxConcurrentJob
+  editData.availableCPUs = row.availableCPUs
+  editData.licenseTokenQuota = row.licenseTokenQuota
   editData.executeDirectoryRoot = row.executeDirectoryRoot
   editData.resultDirectoryRoot = row.resultDirectoryRoot
   editData.importDirectoryRoot = row.importDirectoryRoot
+  editData.isActive = row.isActive
 }
 
 const nowRowSaving = ref(false)
@@ -98,16 +116,20 @@ async function invokeSave(index: number, row: INode) {
     const res = await $fetch<INode>(`/api/back/nodes/${row.hostname}`, {
       method: 'POST', body:
       {
-        maxConcurrentJob: editData.maxConcurrentJob,
+        availableCPUs: editData.availableCPUs,
+        licenseTokenQuota: editData.licenseTokenQuota,
         executeDirectoryRoot: editData.executeDirectoryRoot,
         resultDirectoryRoot: editData.resultDirectoryRoot,
-        importDirectoryRoot: editData.importDirectoryRoot
+        importDirectoryRoot: editData.importDirectoryRoot,
+        isActive: editData.isActive
       }
     })
-    nodes.value[index].maxConcurrentJob = res.maxConcurrentJob
+    nodes.value[index].availableCPUs = res.availableCPUs
+    nodes.value[index].licenseTokenQuota = res.licenseTokenQuota
     nodes.value[index].executeDirectoryRoot = res.executeDirectoryRoot
     nodes.value[index].resultDirectoryRoot = res.resultDirectoryRoot
     nodes.value[index].importDirectoryRoot = res.importDirectoryRoot
+    nodes.value[index].isActive = res.isActive
   } catch (e) {
     MsgBox.debugError(e)
   } finally {
@@ -118,5 +140,6 @@ async function invokeSave(index: number, row: INode) {
 
 function finishEdit() {
   editIndex.value = undefined
+  useActiveNodes().load()
 }
 </script>

@@ -1,4 +1,4 @@
-import { INode } from '~/models/api/node'
+import { INode } from '~/sharedDefinitions/model/node'
 
 const key = 'activeNodes'
 type NodeIndex = { label: string; value: string; text: string }
