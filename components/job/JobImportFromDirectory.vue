@@ -146,7 +146,7 @@ const tableData = computed<DirRow[]>(() =>
       _raw: dir,
       owner: dir.owner,
       node: dir.node,
-      inputDir: dir.input.path && ''
+      inputDir: dir.input.path ?? ''
     })) as DirRow[]
     : []
 )

@@ -7,7 +7,7 @@
         <el-tab-pane label="Job List" :name="TabName.View_Table">
           <JobTable ref="table" @job-modified="reload" />
         </el-tab-pane>
-        <el-tab-pane label="Uploade Input File(s)" :name="TabName.Register_Upload">
+        <el-tab-pane label="Upload Input File(s)" :name="TabName.Register_Upload">
           <JobUpload @on-create="reload" />
         </el-tab-pane>
         <el-tab-pane label="Import From Directory" :name="TabName.Register_Shared">
