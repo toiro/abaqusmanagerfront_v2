@@ -173,7 +173,7 @@ const detailVisible = ref(false)
 const detailShowFileTabs = computed(() => {
   if (!detailTarget.value) return false
   const job = detailTarget.value
-  return !([JobStatus.Waiting, JobStatus.Starting] as JobStatus[]).includes(job.status.code) && job.input.type !== 'external'
+  return !([JobStatus.Waiting, JobStatus.Starting, JobStatus.Disposed] as JobStatus[]).includes(job.status.code) && job.input.type !== 'external'
 })
 const detailShowFileExts = computed(() => detailShowFileTabs.value ? Object.values(OutputFileExt) : [])
 

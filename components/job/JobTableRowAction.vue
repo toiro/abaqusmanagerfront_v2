@@ -70,7 +70,7 @@ async function handleDelete() {
 }
 
 function canBeDeleted(job: IJob) {
-  return ([JobStatus.Waiting, JobStatus.Completed, JobStatus.Failed, JobStatus.Missing] as JobStatus[]).includes(
+  return ([JobStatus.Waiting, JobStatus.Completed, JobStatus.Failed, JobStatus.Missing, JobStatus.Disposed] as JobStatus[]).includes(
     job.status.code,
   )
 }
