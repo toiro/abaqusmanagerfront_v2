@@ -203,15 +203,15 @@ const createJobs = async () => {
   // uploadRef.value!.submit()
   nowCreating.value = true
   try {
-    type IExternalJob = Pick<
+    type IJobExternalRegister = Pick<
       IJobExternal,
-      'name' | 'owner' | 'node' | 'description' | 'priority' | 'input'
+      'name' | 'owner' | 'node' | 'description' | 'priority' | 'input' | 'command'
     >;
     const registered: IJobExternal[] = []
     for (const dirRow of selectedDir.value) {
       const rawData = dirRow._raw
       if (!rawData.input.workingDir) return
-      const newJob: IExternalJob = {
+      const newJob: IJobExternalRegister = {
         name: rawData.name,
         owner: rawData.owner,
         node: rawData.node,
@@ -224,6 +224,7 @@ const createJobs = async () => {
           readyTimeout: externalForm.readyTimeout
         },
         priority: externalForm.priority,
+        command: { cpus: 0 }
       }
 
       const responseJob = await $fetch<IJobExternal>('/api/back/jobs', { method: 'POST', body: newJob })
