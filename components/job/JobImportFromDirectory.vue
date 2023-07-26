@@ -20,7 +20,7 @@
   <client-only>
     <el-table ref="dirTableRef" v-loading="nowFetching" :data="tableData" style="width: 100%"
       @selection-change="handleSelectionChange">
-      <el-table-column type="selection" width="55" :selectable="(row, index) => !row._disabled" />
+      <el-table-column type="selection" width="55" :selectable="(row: DirRow, index: number) => !row._disabled" />
       <el-table-column v-for="col in columns" :key="col.label" :label="col.label" :prop="col.prop"
         :sortable="col.sortable" :filters="col.filters" :filter-method="col['filter-method']"
         :formatter="col.formatter" />

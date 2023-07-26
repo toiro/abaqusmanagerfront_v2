@@ -5,7 +5,7 @@
       {{ stats.InUse }} is in Use and {{ stats.Capacity - stats.InUse }} is Available.<br>
       {{ stats.InUseDsls }} tokens is in Use actually according to DSLS.
     </PopInfo>
-    <el-progress v-if="stats" :percent="ratio" :color="color" :text-inside="true" :stroke-width="26">
+    <el-progress v-if="stats" :percentage="ratio" :color="color" :text-inside="true" :stroke-width="26">
       <span>{{ stats.InUse }} / {{ stats.Capacity }}</span> <el-button :loading="nowLoading" size="small" circle
         @click="refresh()">
         <el-icon>

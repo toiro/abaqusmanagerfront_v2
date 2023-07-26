@@ -15,7 +15,7 @@
         </template>
         <template #default="scope">
           <JobTableRowAction :index="scope.$index" :job="(scope.row as JobRow).raw"
-            @show-detail="(index, job) => showDetail(job)" @delete="emits('jobModified')" />
+            @show-detail="(index: number, job: IJob) => showDetail(job)" @delete="emits('jobModified')" />
         </template>
       </el-table-column>
     </el-table>

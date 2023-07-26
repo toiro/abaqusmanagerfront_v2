@@ -13,7 +13,7 @@ export const jobFetch = {
     )
   },
   lazyFetch() {
-    return useLazyFetch<IJob[]>(apiPath, { default: () => [] })
+    return useLazyFetch<IJob[]>(apiPath)
   },
 }
 
