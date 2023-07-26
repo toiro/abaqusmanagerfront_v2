@@ -11,6 +11,7 @@
   },
   "devDependencies": {
     "@element-plus/nuxt": "^1.0.3",
+    "@nuxt/content": "^2.7.1",
     "@nuxtjs/eslint-config-typescript": "^12.0.0",
     "@types/dateformat": "^5.0.0",
     "@types/node": "^18.14.0",
@@ -23,6 +24,7 @@
   "dependencies": {
     "dateformat": "^5.0.3",
     "element-plus": "2.3.3",
+    "github-markdown-css": "^5.2.0",
     "mongoose": "^7.0.1",
     "winser": "git+https://github.com/LiberisLabs/winser.git"
   }
