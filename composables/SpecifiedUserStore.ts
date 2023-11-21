@@ -25,7 +25,8 @@ class UserStore {
   }
 
   setUser(name: string) {
-    this._cookie.value.name = name
-    this._state.value.name = name
+    const newState = { name }
+    this._cookie.value = newState
+    this._state.value = newState
   }
 }

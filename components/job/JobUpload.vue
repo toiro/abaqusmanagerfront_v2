@@ -26,10 +26,10 @@
     </el-form-item>
     <el-form-item label="CPUs" prop="cpus">
       <el-select v-model="jobForm.cpus">
-        <el-option label="1" value="1" />
-        <el-option label="2" value="2" />
-        <el-option label="4" value="4" />
-        <el-option label="8" value="8" />
+        <el-option label="1" :value="1" />
+        <el-option label="2" :value="2" />
+        <el-option label="4" :value="4" />
+        <el-option label="8" :value="8" />
       </el-select>
     </el-form-item>
     <el-button type="primary" @click="invokeCreate">
@@ -137,7 +137,7 @@ const createJob: UploadProps['onSuccess'] = async (uploaded: IUploadedInfo) => {
       node: jobForm.node,
       description: jobForm.description,
       command: {
-        cpus: 2,
+        cpus: jobForm.cpus,
         options: []
       },
       priority: jobForm.priority,
