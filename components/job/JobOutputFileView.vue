@@ -36,6 +36,7 @@ type Props = {
 const props = defineProps<Props>()
 const nowLoading = ref(false)
 const content = ref('')
+let targetPath = ''
 
 const showContent = computed(() => props.show && content.value)
 
@@ -46,12 +47,14 @@ watch(props, () => {
 })
 
 async function loadContent(force = false) {
-  if (content.value && !force) { return }
+  const newTargetPath = `/api/back/jobs/${props.job._id.toString()}/${props.ext}`
+  if (content.value && newTargetPath === targetPath && !force) { return }
 
   let newContent = ''
   nowLoading.value = true
   try {
-    newContent = String(await $fetch(`/api/back/jobs/${props.job._id.toString()}/${props.ext}`))
+    newContent = String(await $fetch(newTargetPath))
+    targetPath = newTargetPath
   } finally {
     // this.$Loading.finish()
     content.value = newContent
