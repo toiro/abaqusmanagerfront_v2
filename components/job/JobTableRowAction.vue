@@ -59,8 +59,12 @@ async function handleDelete() {
   nowDeleting.value = true
   try {
     const res = await jobFetch.delete(props.job, nowDeleting)
-    await MsgBox.success(`Job "${res.name}" is deleted.`)
-    emits('delete', props.index, res)
+    if (res) {
+      await MsgBox.success(`Job "${res.name}" is deleted.`)
+      emits('delete', props.index, res)
+    } else {
+      await MsgBox.warning(`Job "${props.job.name}" couldn't be deleted.`)
+    }
   } catch (e) {
     await MsgBox.debugError(e)
   } finally {
